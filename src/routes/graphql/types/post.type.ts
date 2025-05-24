@@ -1,6 +1,13 @@
-import { GraphQLNonNull, GraphQLObjectType, GraphQLString } from 'graphql/index.js';
+import {
+  GraphQLBoolean,
+  GraphQLInputObjectType,
+  GraphQLInt,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLString,
+} from 'graphql/index.js';
 import { UUIDType } from './uuid.js';
-import { MemberType } from './member.type.js';
+import { MemberTypeIdEnum } from './member.type.js';
 
 export const PostType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Post',
@@ -9,4 +16,21 @@ export const PostType: GraphQLObjectType = new GraphQLObjectType({
     title: { type: new GraphQLNonNull(GraphQLString) },
     content: { type: new GraphQLNonNull(GraphQLString) },
   }),
+});
+
+export const CreatePostInputType = new GraphQLInputObjectType({
+  name: 'CreatePostInput',
+  fields: {
+    title: { type: new GraphQLNonNull(GraphQLString) },
+    content: { type: new GraphQLNonNull(GraphQLString) },
+    authorId: { type: new GraphQLNonNull(UUIDType) },
+  },
+});
+
+export const ChangePostInputType = new GraphQLInputObjectType({
+  name: 'ChangePostInput',
+  fields: {
+    title: { type: GraphQLString },
+    content: { type: GraphQLString },
+  },
 });
