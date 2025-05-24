@@ -31,7 +31,9 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
       resolve: (user, _, { prisma }) =>
         prisma.user.findMany({
           where: {
-            subscribedToUser: { some: { subscriberId: user.id } },
+            subscribersOnAuthors: {
+              some: { authorId: user.id },
+            },
           },
         }),
     },
@@ -40,7 +42,9 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
       resolve: (user, _, { prisma }) =>
         prisma.user.findMany({
           where: {
-            userSubscribedTo: { some: { authorId: user.id } },
+            subscribersOnAuthors: {
+              some: { subscriberId: user.id },
+            },
           },
         }),
     },
