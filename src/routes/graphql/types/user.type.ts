@@ -16,13 +16,29 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
     id: { type: new GraphQLNonNull(UUIDType) },
     name: { type: new GraphQLNonNull(GraphQLString) },
     balance: { type: new GraphQLNonNull(GraphQLFloat) },
-    profile: { type: ProfileType },
-    posts: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(PostType))) },
+    profile: {
+      type: ProfileType,
+      resolve: async (user, _, context) =>
+        await context.prisma.profile.findUnique({
+          where: { userId: user.id },
+        }),
+    },
+    posts: {
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(PostType))),
+      resolve: async (user, _, context) =>
+        await context.prisma.posts.findUnique({
+          where: { userId: user.id },
+        }),
+    },
     userSubscribedTo: {
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
+      resolve: async (user, _, context) =>
+        await context.prisma.userSubscribedTo.findUnique({ where: { userId: user.id } }),
     },
     subscribedToUser: {
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
+      resolve: async (user, _, context) =>
+        await context.prisma.subscribedToUser.findUnique({ where: { userId: user.id } }),
     },
   }),
 });
