@@ -18,35 +18,43 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
     balance: { type: new GraphQLNonNull(GraphQLFloat) },
     profile: {
       type: ProfileType,
-      resolve: (user, _, { prisma }) =>
-        prisma.profile.findUnique({ where: { userId: user.id } }),
+      resolve: async (user, _, { prisma, loaders }) => {
+        const profile = await prisma.profile.findUnique({
+          where: { userId: user.id },
+          include: { memberType: true },
+        });
+
+        if (profile) {
+          loaders.profile.prime(profile.id, profile);
+          if (profile.memberType) {
+            loaders.memberType.prime(profile.memberType.id, profile.memberType);
+          }
+          return profile;
+        }
+        return null;
+      },
     },
     posts: {
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(PostType))),
-      resolve: (user, _, { prisma }) =>
-        prisma.post.findMany({ where: { authorId: user.id } }),
+      resolve: (user, _, { prisma }) => {
+        return prisma.post.findMany({ where: { authorId: user.id } });
+      },
     },
     userSubscribedTo: {
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
-      resolve: (user, _, { prisma }) =>
-        prisma.user.findMany({
-          where: {
-            subscribersOnAuthors: {
-              some: { authorId: user.id },
-            },
-          },
-        }),
+      resolve: async (user, _, { loaders }) => {
+        const subscriptions = await loaders.subscriptionsBySubscriber.load(user.id);
+        return Promise.all(subscriptions.map((sub) => loaders.user.load(sub.authorId)));
+      },
     },
     subscribedToUser: {
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
-      resolve: (user, _, { prisma }) =>
-        prisma.user.findMany({
-          where: {
-            subscribersOnAuthors: {
-              some: { subscriberId: user.id },
-            },
-          },
-        }),
+      resolve: async (user, _, { loaders }) => {
+        const subscriptions = await loaders.subscriptionsByAuthor.load(user.id);
+        return Promise.all(
+          subscriptions.map((sub) => loaders.user.load(sub.subscriberId)),
+        );
+      },
     },
   }),
 });
