@@ -21,14 +21,10 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
       resolve: async (user, _, { prisma, loaders }) => {
         const profile = await prisma.profile.findUnique({
           where: { userId: user.id },
-          include: { memberType: true },
         });
 
         if (profile) {
           loaders.profile.prime(profile.id, profile);
-          if (profile.memberType) {
-            loaders.memberType.prime(profile.memberType.id, profile.memberType);
-          }
           return profile;
         }
         return null;

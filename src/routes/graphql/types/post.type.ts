@@ -1,13 +1,10 @@
 import {
-  GraphQLBoolean,
   GraphQLInputObjectType,
-  GraphQLInt,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLString,
 } from 'graphql/index.js';
 import { UUIDType } from './uuid.js';
-import { MemberTypeIdEnum } from './member.type.js';
 
 export const PostType: GraphQLObjectType = new GraphQLObjectType({
   name: 'Post',

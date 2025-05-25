@@ -1,11 +1,6 @@
 import DataLoader from 'dataloader';
 import { PrismaClient, User, Post, Profile, MemberType } from '@prisma/client';
 
-interface GraphQLContext {
-  prisma: PrismaClient;
-  loaders: ReturnType<typeof createLoaders>;
-}
-
 export function createLoaders(prisma: PrismaClient) {
   const userLoader = new DataLoader<string, User | null>(async (ids) => {
     const users = await prisma.user.findMany({ where: { id: { in: [...ids] } } });
@@ -34,8 +29,8 @@ export function createLoaders(prisma: PrismaClient) {
     const memberTypes = await prisma.memberType.findMany({
       where: { id: { in: [...ids] } },
     });
-    const memberTypeMap = new Map(memberTypes.map((mt) => [mt.id, mt]));
-    return ids.map((id) => memberTypeMap.get(id) ?? null);
+    const map = new Map(memberTypes.map((mt) => [mt.id, mt]));
+    return ids.map((id) => map.get(id) ?? null);
   });
 
   const subscriptionsBySubscriber = new DataLoader<string, any[]>(

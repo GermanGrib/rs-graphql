@@ -16,7 +16,9 @@ export const ProfileType: GraphQLObjectType = new GraphQLObjectType({
     yearOfBirth: { type: new GraphQLNonNull(GraphQLInt) },
     memberType: {
       type: new GraphQLNonNull(MemberType),
-      resolve: (profile) => profile.memberType,
+      resolve: (profile, _, { loaders }) => {
+        return loaders.memberType.load(profile.memberTypeId);
+      },
     },
   }),
 });
