@@ -16,6 +16,13 @@ export function createLoaders(prisma: PrismaClient) {
     return ids.map((id) => postMap.get(id) ?? null);
   });
 
+  const postsByAuthorId = new DataLoader<string, Post[]>(async (authorIds) => {
+    const posts = await prisma.post.findMany({
+      where: { authorId: { in: [...authorIds] } },
+    });
+    return authorIds.map((id) => posts.filter((post) => post.authorId === id));
+  });
+
   const profileLoader = new DataLoader<string, Profile | null>(async (ids) => {
     const profiles = await prisma.profile.findMany({
       where: { id: { in: [...ids] } },
@@ -23,6 +30,15 @@ export function createLoaders(prisma: PrismaClient) {
     });
     const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
     return ids.map((id) => profileMap.get(id) ?? null);
+  });
+
+  const profileByUserId = new DataLoader<string, Profile | null>(async (userIds) => {
+    const profiles = await prisma.profile.findMany({
+      where: { userId: { in: [...userIds] } },
+      include: { memberType: true },
+    });
+    const profileMap = new Map(profiles.map((profile) => [profile.userId, profile]));
+    return userIds.map((id) => profileMap.get(id) ?? null);
   });
 
   const memberTypeLoader = new DataLoader<string, MemberType | null>(async (ids) => {
@@ -60,7 +76,9 @@ export function createLoaders(prisma: PrismaClient) {
   return {
     user: userLoader,
     post: postLoader,
+    postsByAuthorId,
     profile: profileLoader,
+    profileByUserId,
     memberType: memberTypeLoader,
     subscriptionsBySubscriber,
     subscriptionsByAuthor,

@@ -18,23 +18,11 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType({
     balance: { type: new GraphQLNonNull(GraphQLFloat) },
     profile: {
       type: ProfileType,
-      resolve: async (user, _, { prisma, loaders }) => {
-        const profile = await prisma.profile.findUnique({
-          where: { userId: user.id },
-        });
-
-        if (profile) {
-          loaders.profile.prime(profile.id, profile);
-          return profile;
-        }
-        return null;
-      },
+      resolve: (user, _, { loaders }) => loaders.profileByUserId.load(user.id),
     },
     posts: {
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(PostType))),
-      resolve: (user, _, { prisma }) => {
-        return prisma.post.findMany({ where: { authorId: user.id } });
-      },
+      resolve: (user, _, { loaders }) => loaders.postsByAuthorId.load(user.id),
     },
     userSubscribedTo: {
       type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
