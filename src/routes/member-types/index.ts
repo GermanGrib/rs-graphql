@@ -33,6 +33,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           id: req.params.memberTypeId,
         },
       });
+      console.log('MemberType in DB:', memberType);
       if (memberType === null) {
         throw httpErrors.notFound();
       }
